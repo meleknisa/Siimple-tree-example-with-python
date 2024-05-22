@@ -1,0 +1,120 @@
+import random
+
+# Node sınıfı, ağacın düğümlerini temsil eder
+class Node:
+    def __init__(self, key):
+        self.left = None  # Sol çocuk düğüm
+        self.right = None  # Sağ çocuk düğüm
+        self.value = key  # Düğümün değeri
+
+# BinaryTree sınıfı, ikili arama ağacını temsil eder
+class BinaryTree:
+    def __init__(self):
+        self.root = None  # Ağacın kök düğümü
+
+    def insert(self, key):
+        # Eğer ağaç boşsa, kök düğüm oluşturulur
+        if self.root is None:
+            self.root = Node(key)
+        else:
+            self._insert(self.root, key)
+    
+    def _insert(self, current_node, key):
+        # Yeni değeri uygun konuma eklemek için karşılaştırma yapılır
+        if key < current_node.value:
+            # Sol alt ağaçta ekleme
+            if current_node.left is None:
+                current_node.left = Node(key)
+            else:
+                self._insert(current_node.left, key)
+        else:
+            if key > current_node.value:  # Aynı değeri eklememek için key != current_node.value kontrolü
+                # Sağ alt ağaçta ekleme
+                if current_node.right is None:
+                    current_node.right = Node(key)
+                else:
+                    self._insert(current_node.right, key)
+
+    def inorder_traversal(self, node, elements):
+        # Inorder dolaşma (sol, kök, sağ)
+        if node:
+            self.inorder_traversal(node.left, elements)
+            elements.append(node.value)
+            self.inorder_traversal(node.right, elements)
+
+    def print_tree(self):
+        # Ağacı seviyelere göre yazdırma
+        if not self.root:
+            print("Ağaç boş")
+            return
+
+        queue = [(self.root, 0)]
+        current_level = 0
+        output = ""
+
+        while queue:
+            node, level = queue.pop(0)
+            if level > current_level:
+                current_level = level
+                output += "\n"
+
+            output += str(node.value) + " "
+            if node.left:
+                queue.append((node.left, level + 1))
+            if node.right:
+                queue.append((node.right, level + 1))
+
+        print(output)
+
+    def find_path(self, value):
+        # Belirtilen değerin yolunu bulma
+        path = []
+        found = self._find_path(self.root, value, path)
+        return path if found else None
+
+    def _find_path(self, current_node, value, path):
+        if current_node is None:
+            return False
+        
+        path.append(current_node.value)
+
+        if current_node.value == value:
+            return True
+        
+        if (current_node.left and self._find_path(current_node.left, value, path)) or \
+           (current_node.right and self._find_path(current_node.right, value, path)):
+            return True
+
+        path.pop()
+        return False
+
+# Rastgele sayıların ağaca eklenmesi
+tree = BinaryTree()
+num_nodes = int(input("Kaç düğüm eklemek istiyorsunuz? "))
+
+# Kullanıcı tarafından belirtilen sayıda rastgele düğüm eklenir
+for _ in range(num_nodes):
+    node_value = random.randint(1, 100)
+    tree.insert(node_value)
+
+# Ağaç yapısını ve düğüm değerlerini göster
+print("Tree Structure:")
+tree.print_tree()
+
+# Ağaçtaki düğüm değerlerini elde et
+elements = []
+tree.inorder_traversal(tree.root, elements)
+print("\nAğaçta bulunan elemanlar:")
+print(elements)
+
+# Kullanıcıdan ağaçtaki bir elemanı seçmesini isteme
+while True:
+    chosen_value = int(input("Lütfen ağaçtaki elemanlardan birini seçin: "))
+    if chosen_value in elements:
+        # Seçilen elemanın yolunu bul ve yazdır
+        path = tree.find_path(chosen_value)
+        print(f"Seçtiğiniz eleman: {chosen_value}")
+        print(f"Elemanın geldiği basamaklar: {path}")
+        break
+    else:
+        print("Seçtiğiniz eleman ağaçta bulunmamaktadır. Lütfen tekrar deneyin.")
